@@ -1,0 +1,60 @@
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tractor Real-Time Data</title>
+    <script src="/socket.io/socket.io.js"></script>
+</head>
+<body>
+    <h1>Tractor Real-Time Data</h1>
+    <label for="tractor">Tractor Number:</label>
+    <input type="number" id="tractor" name="tractor" required>
+    <label for="date">Date:</label>
+    <input type="date" id="date" name="date" required>
+    <button id="watchButton">Watch Tractor</button>
+    <button id="stopButton" disabled>Stop Watching</button>
+
+    <script>
+        const socket = io();
+
+        document.getElementById('watchButton').addEventListener('click', () => {
+            const tractor = parseInt(document.getElementById('tractor').value, 10);
+            const date = document.getElementById('date').value;
+            
+            if (isNaN(tractor) || !date) {
+                alert('Please enter valid tractor number and date');
+                return;
+            }
+
+            console.log('Watching tractor:', tractor, 'on date:', date);
+            socket.emit('watchTractor', { tractor, date });
+
+            document.getElementById('watchButton').disabled = true;
+            document.getElementById('stopButton').disabled = false;
+        });
+
+        document.getElementById('stopButton').addEventListener('click', () => {
+            socket.emit('stopWatching');
+            console.log('Stopped watching');
+
+            document.getElementById('watchButton').disabled = false;
+            document.getElementById('stopButton').disabled = true;
+        });
+
+        socket.on('tractorUpdate', (data) => {
+            console.log('Tractor Update:', data);
+        });
+
+        socket.on('error', (message) => {
+            console.error('Error:', message);
+        });
+
+        socket.on('disconnect', () => {
+            console.log('Socket.io: disconnected');
+        });
+    </script>
+</body>
+</html>
